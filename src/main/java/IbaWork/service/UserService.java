@@ -1,9 +1,10 @@
 package IbaWork.service;
 
-import IbaWork.Model.Role;
-import IbaWork.Model.User;
-import IbaWork.repository.userRepository;
+import IbaWork.model.Role;
+import IbaWork.model.User;
+import IbaWork.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -11,7 +12,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLException;
 import java.util.Collections;
 
 @Service
@@ -19,9 +19,10 @@ import java.util.Collections;
 public class UserService implements UserDetailsService {
 
     @Autowired
-    userRepository userRepository;
+    private UserRepository userRepository;
+
     @Autowired
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -31,10 +32,9 @@ public class UserService implements UserDetailsService {
     public String addNewUser(String username, String password_first, String password_second ) {
         String message = "User created!";
         User user;
-            user = userRepository.findByUsername(username);
+        user = userRepository.findByUsername(username);
         if (user != null) {
-             message = "User exist!";
-            return message;
+            message = "User exist!";
         } else {
             user = new User();
             if(password_first != "" && password_first.equals(password_second)) {
@@ -42,7 +42,6 @@ public class UserService implements UserDetailsService {
                 user.setPassword(encryptPassword);
             }else{
                 message = "Password are different!";
-                return message;
             }
             user.setUsername(username);
             user.setActive(true);
@@ -51,4 +50,10 @@ public class UserService implements UserDetailsService {
         }
         return message;
     }
+
+    public User userBySecurityContext(){
+        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return user;
+    }
+
 }
