@@ -1,14 +1,16 @@
-package IbaWork.Controller;
+package IbaWork.controller;
 
 
-import IbaWork.Model.Answer;
-import IbaWork.Model.AuthenticationBean;
+import IbaWork.model.Answer;
 import IbaWork.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
 import java.security.Principal;
+import java.util.Collections;
+import java.util.Map;
 
 @RestController
 @CrossOrigin("http://localhost:4200")
@@ -16,15 +18,6 @@ public class AuthController {
 
     @Autowired
     private UserService userService;
-
-    @GetMapping(path="/auth")
-    public AuthenticationBean helloWorld() { return new AuthenticationBean("You are authenticated"); }
-
-    @GetMapping(path="/ss")
-    public AuthenticationBean ss()
-    {
-        return new AuthenticationBean("ss");
-    }
 
     @GetMapping("/user")
     public Principal user(Principal user) {
@@ -38,5 +31,10 @@ public class AuthController {
                              @RequestParam(required = false, name = "password_second") String password_second) {
         Answer answer = new Answer(userService.addNewUser(username, password_first, password_second));
         return answer;
+    }
+
+    @RequestMapping("/token")
+    public Map<String,String> token(HttpSession session) {
+        return Collections.singletonMap("token", session.getId());
     }
 }
