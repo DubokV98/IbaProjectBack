@@ -1,22 +1,26 @@
 package IbaWork.controller;
 
+import IbaWork.model.Action;
+import IbaWork.model.Select;
 import IbaWork.model.Table;
+import IbaWork.model.Value;
 import IbaWork.service.ActionService;
 import IbaWork.service.RequestService;
 import IbaWork.service.TableService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
-import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpSession;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.List;
 
-@CrossOrigin("http://localhost:4200")
+
 @RestController
+@CrossOrigin("http://localhost:4200")
 public class HomeController {
 
     @Autowired
@@ -31,14 +35,18 @@ public class HomeController {
     @Autowired
     private ActionService actionService;
 
+
     @GetMapping(name = "/home")
     public String selectFieldTable() throws SQLException, JsonProcessingException {
-            List<Table> tables = tableService.takeAllTableAndStructure();
+            List<Table> tables = tableService.selectTablesAndStructure();
             return objectMapper.writeValueAsString(tables);
     }
-    @PostMapping(name="/request")
-    public String executeRequest(@RequestParam(name = "request") String request, HttpSession httpSession) throws JsonProcessingException {
-        String answer="";
+
+    @RequestMapping(value = "/request", method = RequestMethod.POST, produces = { MediaType.APPLICATION_JSON_VALUE,
+            MediaType.APPLICATION_XML_VALUE })
+    public String executeRequest(@RequestParam(required = false, name = "request") String request,
+                                 HttpSession httpSession) throws JsonProcessingException {
+        String answer="ERROR";
         List<Object[]> list;
 
         request = request.toUpperCase();
@@ -48,14 +56,28 @@ public class HomeController {
             if (!lines[i].equals("")) {
                 httpSession.setAttribute("request", lines[i]);
                     if (requestService.checkSelectAction(lines[i])) {
-                        list = requestService.selectExecute(lines[i]);
-                        answer = objectMapper.writeValueAsString(list);
+                        Select select = requestService.selectExecute(lines[i]);
+                        answer = objectMapper.writeValueAsString(select);
                     } else {
                         answer = requestService.executeRequest(lines[i]);
+                        answer = objectMapper.writeValueAsString(answer);
                     }
                 httpSession.removeAttribute("request");
             }
         }
         return answer;
     }
+
+    @RequestMapping(value = "/actionToday", method = RequestMethod.GET)
+    public String takeAllTodayRequest() throws JsonProcessingException, ParseException {
+        List<Action> actionList = actionService.findAllActionTodayCurrentUser();
+        return objectMapper.writeValueAsString(actionList);
+    }
+
+    @RequestMapping(value = "/actionAll", method = RequestMethod.GET)
+    public String takeAllRequest() throws JsonProcessingException, ParseException {
+        List<Action> actionList = actionService.findAllActionUser();
+        return objectMapper.writeValueAsString(actionList);
+    }
+
 }

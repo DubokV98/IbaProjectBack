@@ -10,7 +10,7 @@ import java.util.List;
 public class Table {
     private String tableName;
 
-    List<Structure> structureList;
+    private List<Structure> structureList;
 
     public Table(){ }
 

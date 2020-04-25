@@ -7,6 +7,7 @@ import lombok.Setter;
 @Setter
 public class Structure {
     private String field;
+    private String Type;
 
     public Structure(){}
 }

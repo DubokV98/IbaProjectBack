@@ -1,11 +1,12 @@
 package IbaWork.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
 import javax.persistence.Table;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Getter
@@ -17,10 +18,12 @@ public class Action {
     private Long id;
 
     private String request;
-    private Date date;
+    private LocalDate date;
     private String result;
+    private String time;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "user_id")
+    @JsonBackReference
     private User user;
 }

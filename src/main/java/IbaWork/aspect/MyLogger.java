@@ -1,5 +1,6 @@
 package IbaWork.aspect;
 
+import IbaWork.model.Select;
 import IbaWork.service.ActionService;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -25,11 +26,16 @@ public class MyLogger {
         actionService.saveAction(request, result);
     }
 
-    @AfterReturning(value = "execution (public * IbaWork.service.RequestService.selectExecute(..))", returning = "list")
-    public void afterCallMethodSelectExecute(JoinPoint joinPoint, List<Object[]> list){
+    @AfterReturning(value = "execution (public * IbaWork.service.RequestService.selectExecute(..))", returning = "select")
+    public void afterCallMethodSelectExecute(JoinPoint joinPoint, Select select){
         String request = (String) joinPoint.getArgs()[FIRST_ARGUMENT];
-        String result = list.size()+ " row(s) returned";
-       actionService.saveAction(request, result);
+        String result;
+        if(select != null){
+             result = select.getValuesList().size() + " row(s) returned";
+        }else {
+            result = "0 row(s) returned";
+        }
+        actionService.saveAction(request, result);
     }
 
 }

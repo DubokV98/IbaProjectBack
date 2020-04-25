@@ -1,18 +1,25 @@
 package IbaWork.service;
 
+import IbaWork.model.Select;
+import IbaWork.model.Structure;
 import IbaWork.model.User;
 import IbaWork.config.ValidatorBean;
+import IbaWork.model.Value;
 import IbaWork.repository.RequestRepositoryImpl;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class RequestService {
     @Autowired
     RequestRepositoryImpl requestRepository;
+
+    @Autowired
+    TableService tableService;
 
     @Autowired
     UserService userService;
@@ -48,15 +55,6 @@ public class RequestService {
         return false;
     }
 
-    public boolean checkActionUser(String request){
-        for (int j = 0; j < ValidatorBean.prohibitedTables.size(); j++) {
-            if (request.contains(ValidatorBean.prohibitedTables.get(j))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean checkSelectAction(String request) {
         if(request.contains(ValidatorBean.SELECT)){
             return true;
@@ -82,14 +80,54 @@ public class RequestService {
         return false;
     }
 
+    public Select takeSelectTableStructure(String request){
 
-    public List<Object[]> selectExecute(String request) throws ConstraintViolationException {
-        List<Object[]> list = null;
+        String dbAndTable = tableService.takeDbTableFromRequest(request);
+
+        List<Object[]> structureObjList = tableService.takeCurrentTable(dbAndTable);
+
+        Structure[] structures = new Structure[structureObjList.size()];
+        Select select = new Select();
+        int i = 0;
+
+        for (Object[] obj: structureObjList) {
+            structures[i] = (tableService.takeStructure(obj));
+            i++;
+        }
+        select.setStructures(structures);
+        return select;
+    }
+    public Select selectExecute(String request) throws ConstraintViolationException {
+        Select select = new Select();
         if(!checkProhibitedTables(request)) {
             if(checkDB(request)){
-                list = requestRepository.selectRequest(request);
+                select = takeSelectTableStructure(request);
+                List<Object[]> list = requestRepository.selectRequest(request);
+                select = parseToListValue(list, select);
             }
         }
-        return list;
+        return select;
+    }
+
+    public Select parseToListValue(List<Object []> objectList, Select select) {
+
+        List<Value> valueList = new ArrayList<>();
+        int numberFieldsTable = select.getStructures().length;
+
+        for (Object[] object: objectList) {
+
+            Value value = new Value();
+            String[] stringMas = new String[numberFieldsTable];
+
+            for (int i = 0; i < numberFieldsTable; i++) {
+                stringMas[i]= String.valueOf(object[i]);
+            }
+
+            value.setValue(stringMas);
+            valueList.add(value);
+        }
+        select.setValuesList(valueList);
+        return select;
     }
 }
+
