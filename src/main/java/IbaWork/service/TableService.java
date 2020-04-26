@@ -67,7 +67,7 @@ public class TableService {
         }
         return false;
     }
-    
+
     public String takeDbTableFromRequest(String request){
         List<String> list = tableRepositoryImpl.takeAllTable();
         String findDbAndTable = findDbTableFromRequest(list, request);

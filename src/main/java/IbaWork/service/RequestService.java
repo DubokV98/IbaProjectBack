@@ -56,6 +56,12 @@ public class RequestService {
     }
 
     public boolean checkSelectAction(String request) {
+        for (String validAction : ValidatorBean.validActionAdmin) {
+            if(request.contains(validAction)){
+                return false;
+            }
+        }
+
         if(request.contains(ValidatorBean.SELECT)){
             return true;
         }
@@ -63,8 +69,8 @@ public class RequestService {
     }
 
     public String[] checkRowRequest(String request){
-        request = request.replaceAll(";",";\n");
-        String[] lines = request.split("\n");
+        request = request.replaceAll("\n"," ");
+        String[] lines = request.split(";");
         return lines;
     }
 
@@ -97,6 +103,7 @@ public class RequestService {
         select.setStructures(structures);
         return select;
     }
+
     public Select selectExecute(String request) throws ConstraintViolationException {
         Select select = new Select();
         if(!checkProhibitedTables(request)) {

@@ -25,7 +25,7 @@ public class ValidatorBean {
 
     @Bean
     public List<String> createListValidActionAdmin() {
-        validActionAdmin = Arrays.asList("SELECT", "INSERT", "UPDATE", "DELETE","CREATE TABLE","DROP TABLE");
+        validActionAdmin = Arrays.asList( "INSERT", "UPDATE", "DELETE","CREATE TABLE","DROP TABLE");
         return validActionAdmin;
     }
 
